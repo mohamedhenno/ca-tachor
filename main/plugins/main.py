@@ -10,12 +10,13 @@ from ethon.pyfunc import video_metadata
 from .. import Drone, ACCESS_CHANNEL, LOG_CHANNEL, MONGODB_URI, FORCESUB_UN
 
 from main.plugins.compressor import compress
+from main.plugins.encoder import encode
 from main.Database.database import Database
 from main.plugins.actions import force_sub
-from LOCAL.localisation import source_text, SUPPORT_LINK
+from LOCAL.localisation import SUPPORT_LINK
 
 #Don't be a MF by stealing someone's hardwork.
-forcesubtext = f"**Tʜɪѕ Bᴏᴛ Fᴏʀ Pᴇʀѕᴏɴᴀʟ Uѕᴇ !!**\n\n**Tᴏ Uѕᴇ Tʜɪѕ Bᴏᴛ Yᴏᴜ'ᴠᴇ Tᴏ Jᴏɪɴ**👇 {FORCESUB_UN}\n\n**Aʟѕᴏ Jᴏɪɴ**\nhttps://t.me/+XfdYtFzVgVxkNWU0"
+forcesubtext = f"**Tʜɪѕ Bᴏᴛ Fᴏʀ Pᴇʀѕᴏɴᴀʟ Uѕᴇ !!**\n\n**Tᴏ Uѕᴇ Tʜɪѕ Bᴏᴛ Yᴏᴜ'ᴠᴇ Tᴏ Jᴏɪɴ**👇 {FORCESUB_UN}\n\n**Aʟѕᴏ Jᴏɪɴ**\nhttps://t.me/+uPg3TPNFuckwMDU0"
 
 
 @Drone.on(events.NewMessage(incoming=True, func=lambda e: e.is_private))
@@ -32,13 +33,24 @@ async def compin(event):
                 return await event.reply(f'**Yᴏᴜ Aʀᴇ Bᴀɴɴᴇᴅ Tᴏ Usᴇ Mᴇ!**\n\n**Cᴏɴᴛᴀᴄᴛ** [SUPPORT]({SUPPORT_LINK})', link_preview=False)
             video = event.file.mime_type
             if 'video' in video:
-                await event.reply("**Vɪᴅᴇᴏ Cᴏᴍᴘʀᴇѕѕᴏʀ**",
+                await event.reply("**Vɪᴅᴇᴏ Cᴏɴᴠᴇʀᴛᴏʀ**",
                             buttons=[
-                                [Button.inline("Cᴏᴍᴘʀᴇѕѕ HEVC x265", data="compress")]
+                                [Button.inline("Eɴᴄᴏᴅᴇ x265", data="encode"),
+                                 Button.inline("Cᴏᴍᴘʀᴇѕѕ HEVC", data="compress")]
                             ])
 
     await event.forward_to(int(ACCESS_CHANNEL))
-
+    
+@Drone.on(events.callbackquery.CallbackQuery(data="encode"))
+async def _encode(event):
+    await event.edit("**Cᴏᴍᴘʀᴇѕѕ & Cʜᴀɴɢᴇ Vɪᴅᴇᴏ Rᴇѕᴏʟᴜᴛɪᴏɴ**",
+                    buttons=[
+                        [Button.inline("240p", data="240"),
+                         Button.inline("360p", data="360")],
+                        [Button.inline("480p", data="480"),
+                         Button.inline("720p", data="720")],
+                        [Button.inline("Bᴀᴄᴋ", data="back")]])
+     
 @Drone.on(events.callbackquery.CallbackQuery(data="compress"))
 async def _compress(event):
     await event.edit("**Cᴏᴍᴘʀᴇѕѕ HEVC**",
@@ -52,8 +64,9 @@ async def _compress(event):
 
 @Drone.on(events.callbackquery.CallbackQuery(data="back"))
 async def back(event):
-    await event.edit("**Cᴏᴍᴘʀᴇѕѕ HEVC x265**", buttons=[
-                    [Button.inline("Cᴏᴍᴘʀᴇѕѕ HEVC", data="compress")]])
+    await event.edit("**Vɪᴅᴇᴏ Cᴏɴᴠᴇʀᴛᴏʀ**", buttons=[
+                    [Button.inline("Eɴᴄᴏᴅᴇ x265", data="encode"),
+                     Button.inline("Cᴏᴍᴘʀᴇѕѕ HEVC", data="compress")]])
     
 #-----------------------------------------------------------------------------------------
 
@@ -80,7 +93,7 @@ async def check_timer(event, list1, list2):
     else:
         return True, None
     
-
+    
 @Drone.on(events.callbackquery.CallbackQuery(data="fcomp"))
 async def fcomp(event):
     yy = await force_sub(event.sender_id)
@@ -173,3 +186,79 @@ async def _265(event):
     else:
         await event.edit(f"**Aɴᴏᴛʜᴇʀ Pʀᴏᴄᴇѕѕ Iɴ Pʀᴏɢʀᴇѕѕ**!\n\n[Lᴏɢ Cʜᴀɴɴᴇʟ](https://t.me/{LOG_CHANNEL})", link_preview=False)
         
+@Drone.on(events.callbackquery.CallbackQuery(data="240"))
+async def _240(event):
+    yy = await force_sub(event.sender_id)
+    if yy is True:
+        return await event.reply(forcesubtext)
+    s, t = await check_timer(event, process1, timer) 
+    if s == False:
+        return await event.answer(t, alert=True)
+    button = await event.get_message()
+    msg = await button.get_reply_message()  
+    if not os.path.isdir("encodemedia"):
+        await event.delete()
+        os.mkdir("encodemedia")
+        await encode(event, msg, scale=240)
+        os.rmdir("encodemedia")
+        await set_timer(event, process1, timer) 
+    else:
+        await event.edit(f"**Aɴᴏᴛʜᴇʀ Pʀᴏᴄᴇѕѕ Iɴ Pʀᴏɢʀᴇѕѕ**!\n\n[Lᴏɢ Cʜᴀɴɴᴇʟ](https://t.me/{LOG_CHANNEL})", link_preview=False)
+        
+@Drone.on(events.callbackquery.CallbackQuery(data="360"))
+async def _360(event):
+    yy = await force_sub(event.sender_id)
+    if yy is True:
+        return await event.reply(forcesubtext)
+    s, t = await check_timer(event, process1, timer) 
+    if s == False:
+        return await event.answer(t, alert=True)
+    button = await event.get_message()
+    msg = await button.get_reply_message()  
+    if not os.path.isdir("encodemedia"):
+        await event.delete()
+        os.mkdir("encodemedia")
+        await encode(event, msg, scale=360)
+        os.rmdir("encodemedia")
+        await set_timer(event, process1, timer) 
+    else:
+        await event.edit(f"**Aɴᴏᴛʜᴇʀ Pʀᴏᴄᴇѕѕ Iɴ Pʀᴏɢʀᴇѕѕ**!\n\n[Lᴏɢ Cʜᴀɴɴᴇʟ](https://t.me/{LOG_CHANNEL})", link_preview=False)
+        
+@Drone.on(events.callbackquery.CallbackQuery(data="480"))
+async def _480(event):
+    yy = await force_sub(event.sender_id)
+    if yy is True:
+        return await event.reply(forcesubtext)
+    s, t = await check_timer(event, process1, timer) 
+    if s == False:
+        return await event.answer(t, alert=True)
+    button = await event.get_message()
+    msg = await button.get_reply_message()  
+    if not os.path.isdir("encodemedia"):
+        await event.delete()
+        os.mkdir("encodemedia")
+        await encode(event, msg, scale=480)
+        os.rmdir("encodemedia")
+        await set_timer(event, process1, timer) 
+    else:
+        await event.edit(f"**Aɴᴏᴛʜᴇʀ Pʀᴏᴄᴇѕѕ Iɴ Pʀᴏɢʀᴇѕѕ**!\n\n[Lᴏɢ Cʜᴀɴɴᴇʟ](https://t.me/{LOG_CHANNEL})", link_preview=False)
+        
+@Drone.on(events.callbackquery.CallbackQuery(data="720"))
+async def _720(event):
+    yy = await force_sub(event.sender_id)
+    if yy is True:
+        return await event.reply(forcesubtext)
+    s, t = await check_timer(event, process1, timer) 
+    if s == False:
+        return await event.answer(t, alert=True)
+    button = await event.get_message()
+    msg = await button.get_reply_message()  
+    if not os.path.isdir("encodemedia"):
+        await event.delete()
+        os.mkdir("encodemedia")
+        await encode(event, msg, scale=720)
+        os.rmdir("encodemedia")
+        await set_timer(event, process1, timer) 
+    else:
+        await event.edit(f"**Aɴᴏᴛʜᴇʀ Pʀᴏᴄᴇѕѕ Iɴ Pʀᴏɢʀᴇѕѕ**!\n\n[Lᴏɢ Cʜᴀɴɴᴇʟ](https://t.me/{LOG_CHANNEL})", link_preview=False)
+

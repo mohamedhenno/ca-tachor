@@ -109,7 +109,7 @@ async def fcomp(event):
     if not os.path.isdir("encodemedia"):
         await event.delete()
         os.mkdir("encodemedia")
-        await compress(event, msg, ffmpeg_cmd=2, ps_name="**Hɪɢʜ Cᴏᴍᴘʀᴇѕѕ ⚡ Mᴇᴅɪᴜᴍ Sᴘᴇᴇᴅ**")
+        await compress(event, msg, ffmpeg_cmd=2, ps_name="**Hɪɢʜ Cᴏᴍᴘʀᴇѕѕ ⚡ Fᴀѕᴛ Sᴘᴇᴇᴅ**")
         os.rmdir("encodemedia")
         now = time.time()
         timer.append(f'{now}')

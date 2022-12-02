@@ -1,6 +1,4 @@
-buildpack-ffmpeg
 ffmpeg-python
-ffmpeg
 heroku3
 motor
 cryptg
